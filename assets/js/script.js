@@ -46,6 +46,72 @@ var saveTasks = function() {
   localStorage.setItem("tasks", JSON.stringify(tasks));
 };
 
+$(".card .list-group").sortable({
+  // enables dragging across lists
+  connectWith: $(".card .list-group"),
+  scroll: false,
+  tolerance: "pointer",
+  // tells jQuery to create a copy of the dragged element and move the copy instead of the original
+  helper: "clone",
+  // The activate and deactivate events trigger once for all connected lists as soon as dragging starts and stops.
+  activate: function(event, ui) {
+    console.log(ui);
+  },
+  deactivate: function(event, ui) {
+    console.log(ui);
+  },
+  // The over and out events trigger when a dragged item enters or leaves a connected list.
+  over: function(event) {
+    console.log(event);
+  }, 
+  out: function(event) {
+    console.log(event);
+  },
+  // The update event triggers when the contents of a list have changed (e.g., the items were re-ordered, an item was removed, or an item was added).
+  update: function() {
+    var tempArr = [];
+    // loop over current set of children in sortable list
+    $(this).children().each(function() {
+
+      // add task data to the temp array as an object
+      tempArr.push({
+        text: $(this)
+        .find("p")
+        .text()
+        .trim(),
+        date: $(this)
+        .find("span")
+        .text()
+        .trim()
+      });
+    });
+
+    // trim down list's ID to match object property
+    var arrName = $(this)
+      .attr("id")
+      .replace("list-", "");
+
+    // update array on tasks object and save
+    tasks[arrName] = tempArr;
+    saveTasks();
+  },
+});
+
+$("#trash").droppable({
+  accept: ".card .list-group-item",
+  tolerance: "touch",
+  drop: function(event, ui) {
+    ui.draggable.remove();
+    console.log("drop");
+  },
+  over: function(event, ui) {
+    console.log("over");
+  },
+  out: function(event, ui) {
+    console.log("out");
+  }
+});
+
 // begins editing task on click 
 $(".list-group").on("click", "p", function() {
   var text = $(this).text();
@@ -64,22 +130,19 @@ $(".list-group").on("click", "p", function() {
 $(".list-group").on("blur", "textarea", function () {
   // get the textarea's current value/text
   var text = $(this)
-    .val()
-    .trim();
-  // get the parent ul's id attribute
+    .val();
+  // get status type and position in the list
   var status = $(this)
     .closest(".list-group")
     .attr("id")
     .replace("list-", "");
 
-  saveTasks();
-
-  //get the task's position in the list of other li elements
   var index = $(this)
     .closest(".list-group-item")
     .index();
-
-  tasks[status][index].text = text;
+  
+    tasks[status][index].text = text;
+    saveTasks();
 
   // recreate p element 
   var taskP = $("<p>")
@@ -88,7 +151,6 @@ $(".list-group").on("blur", "textarea", function () {
 
   // replace text area w p element
   $(this).replaceWith(taskP);
-
 });
 
 //due date was clicked - but does not allow edit to save
@@ -112,7 +174,7 @@ $(".list-group").on("click", "span", function() {
 });
 
 // value of due date was changed and saved
-$(".list-group").on("blur", "input[type='text']", function() {
+$(".list-group").on("change", "input[type='text']", function() {
   // get current text
   var date = $(this)
     .val()
@@ -141,7 +203,6 @@ $(".list-group").on("blur", "input[type='text']", function() {
   // replace input with span element
   $(this).replaceWith(taskSpan);
 });
-
 
 
 
