@@ -77,17 +77,19 @@ $(".card .list-group").sortable({
   helper: "clone",
   // The activate and deactivate events trigger once for all connected lists as soon as dragging starts and stops.
   activate: function(event, ui) {
-    console.log(ui);
+    $(this).addClass("dropover");
+    $(".bottom-trash").addClass("bottom-trash-drag");
   },
   deactivate: function(event, ui) {
-    console.log(ui);
+    $(this).removeClass("dropover");
+    $(".bottom-trash").removeClass("bottom-trash-drag");
   },
   // The over and out events trigger when a dragged item enters or leaves a connected list.
   over: function(event) {
-    console.log(event);
+    $(event.target).addClass("dropover-active");
   }, 
   out: function(event) {
-    console.log(event);
+    $(event.target).removeClass("dropover-active");
   },
   // The update event triggers when the contents of a list have changed (e.g., the items were re-ordered, an item was removed, or an item was added).
   update: function() {
@@ -116,7 +118,7 @@ $(".card .list-group").sortable({
     // update array on tasks object and save
     tasks[arrName] = tempArr;
     saveTasks();
-  },
+  }
 });
 
 
@@ -125,21 +127,20 @@ $("#trash").droppable({
   tolerance: "touch",
   drop: function(event, ui) {
     ui.draggable.remove();
-    console.log("drop");
+    $(".bottom-trash").removeClass("bottom-trash-active");
   },
   over: function(event, ui) {
-    console.log("over");
+    $(".bottom-trash").addClass("bottom-trash-active");
   },
   out: function(event, ui) {
-    console.log("out");
+    $(".bottom-trash").removeClass("bottom-trash-active");
   }
 });
 
 // begins editing task on click 
 $(".list-group").on("click", "p", function() {
-  var text = $(this).text();
-  console.log(text);
-// $("<textarea>") tells jQuery to create a new <textarea> element. uses the HTML syntax for an opening tag to indicate the element to be created.
+  var text = $(this).text().trim();
+  // $("<textarea>") tells jQuery to create a new <textarea> element. uses the HTML syntax for an opening tag to indicate the element to be created.
   var textInput = $("<textarea>")
   .addClass("form-control")
   .val(text);
@@ -150,7 +151,7 @@ $(".list-group").on("click", "p", function() {
 });
 
 // allows you to save your editted task item 
-$(".list-group").on("blur", "textarea", function () {
+$(".list-group").on("blur", "textarea", function() {
   // get the textarea's current value/text
   var text = $(this)
     .val();
@@ -253,7 +254,7 @@ $("#task-form-modal").on("shown.bs.modal", function() {
 });
 
 // EU clicked the Save Changes button to add the task to the list
-$("#task-form-modal .btn-primary").click(function() {
+$("#task-form-modal .btn-save").click(function() {
   // get form values
   var taskText = $("#modalTaskDescription").val();
   var taskDate = $("#modalDueDate").val();
@@ -290,4 +291,8 @@ $("#remove-tasks").on("click", function() {
 // load tasks for the first time
 loadTasks();
 
-
+setInterval(function() {
+  $(".card .list-group-item").each(function() {
+    auditTask($(this));
+  });
+}, 1800000);
